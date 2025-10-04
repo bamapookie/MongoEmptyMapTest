@@ -1,5 +1,6 @@
 package org.example.mongoemptymaptest;
 
+import org.assertj.core.api.Assumptions;
 import org.example.mongoemptymaptest.model.ChildDocument;
 import org.example.mongoemptymaptest.model.ParentDocument;
 import org.example.mongoemptymaptest.repository.ChildRepository;
@@ -56,6 +57,18 @@ class MongoEmptyMapTestApplicationTests {
     @Autowired
     MongoTemplate mongoTemplate;
 
+    @BeforeEach
+    void setUp() {
+        childRepository.save(Fixtures.CHILD);
+        argumentsStream().map(arguments -> (ParentDocument) arguments.get()[0]).forEach(parentRepository::save);
+    }
+
+    @AfterEach
+    void tearDown() {
+        childRepository.deleteAll();
+        parentRepository.deleteAll();
+    }
+
     @Test
     void contextLoads() {
         // This empty method will fail if the context fails to load.
@@ -76,45 +89,62 @@ class MongoEmptyMapTestApplicationTests {
 
     @ParameterizedTest(name = "findById for {1}")
     @MethodSource("argumentsStream")
-    void testFindById(UUID id, String message) {
-        Assertions.assertDoesNotThrow(() -> parentRepository.findById(id), "Unable to deserialize %s.".formatted(message));
+    void testFindById(ParentDocument parent, String message) {
+        Assertions.assertDoesNotThrow(
+                () -> parentRepository.findById(parent.getId()),
+                "Unable to deserialize %s.".formatted(message)
+        );
     }
 
     @ParameterizedTest(name = "Map.values for {1}")
     @MethodSource("argumentsStream")
-    void testMapValues(UUID id, String message) {
-        parentRepository.findById(id).ifPresent(parent -> {
-            Assertions.assertNotNull(parent.getDbRefChildren().values(), "Unable to get values collection map for %s.".formatted(message));
-            Assertions.assertNotNull(parent.getLazyDbRefChildren().values(), "Unable to get values collection map for %s.".formatted(message));
-            Assertions.assertNotNull(parent.getDocumentReferenceChildren().values(), "Unable to get values collection map for %s.".formatted(message));
-            Assertions.assertNotNull(parent.getLazyDocumentReferenceChildren().values(), "Unable to get values collection map for %s.".formatted(message));
+    void testMapValues(ParentDocument parent, String message) {
+        //
+        Assumptions.assumeThatCode(() -> parentRepository.findById(parent.getId())).doesNotThrowAnyException();
+        parentRepository.findById(parent.getId()).ifPresent(parentDocument -> {
+            Assertions.assertNotNull(
+                    parentDocument.getDbRefChildren().values(),
+                    "Unable to get values collection map for %s.".formatted(message)
+            );
+            Assertions.assertNotNull(
+                    parentDocument.getLazyDbRefChildren().values(),
+                    "Unable to get values collection map for %s.".formatted(message)
+            );
+            Assertions.assertNotNull(
+
+                    parentDocument.getDocumentReferenceChildren().values(),
+                    "Unable to get values collection map for %s.".formatted(message)
+            );
+            Assertions.assertNotNull(
+                    parentDocument.getLazyDocumentReferenceChildren().values(),
+                    "Unable to get values collection map for %s.".formatted(message)
+            );
         });
     }
 
     private static Stream<Arguments> argumentsStream() {
         return Stream.of(
-                Arguments.of(Fixtures.PARENT_WITH_CHILD.getId(), "parent with child"),
-                Arguments.of(Fixtures.PARENT_WITH_NO_DBREF_CHILD.getId(), "parent with no @DBRef child"),
-                Arguments.of(Fixtures.PARENT_WITH_NO_LAZY_DBREF_CHILD.getId(), "parent with no lazy @DBRef child"),
-                Arguments.of(Fixtures.PARENT_WITH_NO_DOCUMENT_REFERENCE_CHILD.getId(), "parent with no @DocumentReference child"),
-                Arguments.of(Fixtures.PARENT_WITH_NO_LAZY_DOCUMENT_REFERENCE_CHILD.getId(), "parent with no lazy @DocumentReference child")
+                Arguments.of(
+                        Fixtures.PARENT_WITH_CHILD,
+                        "parent with child"
+                ),
+                Arguments.of(
+                        Fixtures.PARENT_WITH_NO_DBREF_CHILD,
+                        "parent with no @DBRef child"
+                ),
+                Arguments.of(
+                        Fixtures.PARENT_WITH_NO_LAZY_DBREF_CHILD,
+                        "parent with no lazy @DBRef child"
+                ),
+                Arguments.of(
+                        Fixtures.PARENT_WITH_NO_DOCUMENT_REFERENCE_CHILD,
+                        "parent with no @DocumentReference child"
+                ),
+                Arguments.of(
+                        Fixtures.PARENT_WITH_NO_LAZY_DOCUMENT_REFERENCE_CHILD,
+                        "parent with no lazy @DocumentReference child"
+                )
         );
-    }
-
-    @BeforeEach
-    void setUp() {
-        childRepository.save(Fixtures.CHILD);
-        parentRepository.save(Fixtures.PARENT_WITH_CHILD);
-        parentRepository.save(Fixtures.PARENT_WITH_NO_DBREF_CHILD);
-        parentRepository.save(Fixtures.PARENT_WITH_NO_LAZY_DBREF_CHILD);
-        parentRepository.save(Fixtures.PARENT_WITH_NO_DOCUMENT_REFERENCE_CHILD);
-        parentRepository.save(Fixtures.PARENT_WITH_NO_LAZY_DOCUMENT_REFERENCE_CHILD);
-    }
-
-    @AfterEach
-    void tearDown() {
-        childRepository.deleteAll();
-        parentRepository.deleteAll();
     }
 
     static class Fixtures {

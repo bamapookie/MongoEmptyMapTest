@@ -10,6 +10,21 @@ persisted with an empty map, that map will fail to deserialize in one of 2 ways:
    instance, if the getter for the map is called, and the map's `values()` method is called, it
    will return `null`.
 
+## Requirements
+
+- Java 21 - Tested with Java 17 as well.
+- Docker - To run Junit5 tests in TestContainers
+
 ## Running the tests
 
 Tests have been created to illustrate the problem.  Run `gradle test`.
+
+Due to the bug, there are two failing tests:
+1. findById for parent with no @DocumentReference child
+
+   Fails due to the ParentDocument constructor disallowing a null for the `@NonNull` `documentReferenceChildren` map.
+2. Map.values for parent with no lazy @DocumentReference child
+
+   Fails due to `Map.values()` method returning null when it should be populated.
+
+Note that the equivalent tests for `@DBRef` work without problem.
