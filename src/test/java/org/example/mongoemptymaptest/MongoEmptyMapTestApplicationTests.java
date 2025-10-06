@@ -23,7 +23,6 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.MongoDBContainer;
 
 import java.util.Map;
-import java.util.UUID;
 import java.util.stream.Stream;
 
 @SpringBootTest
@@ -77,10 +76,10 @@ class MongoEmptyMapTestApplicationTests {
 
     @ParameterizedTest(name = "raw json for {1}")
     @MethodSource("argumentsStream")
-    void testRawJson(UUID id, String message) {
+    void testRawJson(ParentDocument parent, String message) {
         System.out.printf("Raw JSON for %s.%n", message);
         mongoTemplate.find(
-                new BasicQuery("{ _id: UUID(\"%s\") }".formatted(id)),
+                new BasicQuery("{ _id: UUID(\"%s\") }" .formatted(parent.getId())),
                 String.class,
                 "parent_documents"
         ).forEach(System.out::println);
@@ -92,7 +91,7 @@ class MongoEmptyMapTestApplicationTests {
     void testFindById(ParentDocument parent, String message) {
         Assertions.assertDoesNotThrow(
                 () -> parentRepository.findById(parent.getId()),
-                "Unable to deserialize %s.".formatted(message)
+                "Unable to deserialize %s." .formatted(message)
         );
     }
 
@@ -104,20 +103,20 @@ class MongoEmptyMapTestApplicationTests {
         parentRepository.findById(parent.getId()).ifPresent(parentDocument -> {
             Assertions.assertNotNull(
                     parentDocument.getDbRefChildren().values(),
-                    "Unable to get values collection map for %s.".formatted(message)
+                    "Unable to get values collection map for %s." .formatted(message)
             );
             Assertions.assertNotNull(
                     parentDocument.getLazyDbRefChildren().values(),
-                    "Unable to get values collection map for %s.".formatted(message)
+                    "Unable to get values collection map for %s." .formatted(message)
             );
             Assertions.assertNotNull(
 
                     parentDocument.getDocumentReferenceChildren().values(),
-                    "Unable to get values collection map for %s.".formatted(message)
+                    "Unable to get values collection map for %s." .formatted(message)
             );
             Assertions.assertNotNull(
                     parentDocument.getLazyDocumentReferenceChildren().values(),
-                    "Unable to get values collection map for %s.".formatted(message)
+                    "Unable to get values collection map for %s." .formatted(message)
             );
         });
     }
@@ -148,32 +147,38 @@ class MongoEmptyMapTestApplicationTests {
     }
 
     static class Fixtures {
+
+        private Fixtures() {
+            throw new UnsupportedOperationException("Utility Class");
+        }
+
+        public static final String CHILD_REFERENCE = "CHILD";
         public static final ChildDocument CHILD = ChildDocument.builder().build();
         public static final ParentDocument PARENT_WITH_CHILD = ParentDocument.builder()
-                .dbRefChildren(Map.of("CHILD", CHILD))
-                .lazyDbRefChildren(Map.of("CHILD", CHILD))
-                .documentReferenceChildren(Map.of("CHILD", CHILD))
-                .lazyDocumentReferenceChildren(Map.of("CHILD", CHILD))
+                .dbRefChildren(Map.of(CHILD_REFERENCE, CHILD))
+                .lazyDbRefChildren(Map.of(CHILD_REFERENCE, CHILD))
+                .documentReferenceChildren(Map.of(CHILD_REFERENCE, CHILD))
+                .lazyDocumentReferenceChildren(Map.of(CHILD_REFERENCE, CHILD))
                 .build();
         public static final ParentDocument PARENT_WITH_NO_DBREF_CHILD = ParentDocument.builder()
-                .lazyDbRefChildren(Map.of("CHILD", CHILD))
-                .documentReferenceChildren(Map.of("CHILD", CHILD))
-                .lazyDocumentReferenceChildren(Map.of("CHILD", CHILD))
+                .lazyDbRefChildren(Map.of(CHILD_REFERENCE, CHILD))
+                .documentReferenceChildren(Map.of(CHILD_REFERENCE, CHILD))
+                .lazyDocumentReferenceChildren(Map.of(CHILD_REFERENCE, CHILD))
                 .build();
         public static final ParentDocument PARENT_WITH_NO_LAZY_DBREF_CHILD = ParentDocument.builder()
-                .dbRefChildren(Map.of("CHILD", CHILD))
-                .documentReferenceChildren(Map.of("CHILD", CHILD))
-                .lazyDocumentReferenceChildren(Map.of("CHILD", CHILD))
+                .dbRefChildren(Map.of(CHILD_REFERENCE, CHILD))
+                .documentReferenceChildren(Map.of(CHILD_REFERENCE, CHILD))
+                .lazyDocumentReferenceChildren(Map.of(CHILD_REFERENCE, CHILD))
                 .build();
         public static final ParentDocument PARENT_WITH_NO_DOCUMENT_REFERENCE_CHILD = ParentDocument.builder()
-                .dbRefChildren(Map.of("CHILD", CHILD))
-                .lazyDbRefChildren(Map.of("CHILD", CHILD))
-                .lazyDocumentReferenceChildren(Map.of("CHILD", CHILD))
+                .dbRefChildren(Map.of(CHILD_REFERENCE, CHILD))
+                .lazyDbRefChildren(Map.of(CHILD_REFERENCE, CHILD))
+                .lazyDocumentReferenceChildren(Map.of(CHILD_REFERENCE, CHILD))
                 .build();
         public static final ParentDocument PARENT_WITH_NO_LAZY_DOCUMENT_REFERENCE_CHILD = ParentDocument.builder()
-                .dbRefChildren(Map.of("CHILD", CHILD))
-                .lazyDbRefChildren(Map.of("CHILD", CHILD))
-                .documentReferenceChildren(Map.of("CHILD", CHILD))
+                .dbRefChildren(Map.of(CHILD_REFERENCE, CHILD))
+                .lazyDbRefChildren(Map.of(CHILD_REFERENCE, CHILD))
+                .documentReferenceChildren(Map.of(CHILD_REFERENCE, CHILD))
                 .build();
     }
 }
