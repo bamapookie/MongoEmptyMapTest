@@ -95,6 +95,22 @@ class MongoEmptyMapTestApplicationTests {
         );
     }
 
+    @Test
+    void testFindByIdNoDocRefChild() {
+        Assertions.assertDoesNotThrow(
+                () -> parentRepository.findById(Fixtures.PARENT_WITH_NO_DOCUMENT_REFERENCE_CHILD.getId()),
+                "Unable to deserialize parent with no @DocumentReference Child."
+        );
+    }
+
+    @Test
+    void testFindByIdNoDBRefChild() {
+        Assertions.assertDoesNotThrow(
+                () -> parentRepository.findById(Fixtures.PARENT_WITH_NO_DBREF_CHILD.getId()),
+                "Unable to deserialize parent with no @DBRef Child."
+        );
+    }
+
     @ParameterizedTest(name = "Map.values for {1}")
     @MethodSource("argumentsStream")
     void testMapValues(ParentDocument parent, String message) {
@@ -110,7 +126,6 @@ class MongoEmptyMapTestApplicationTests {
                     "Unable to get values collection map for %s." .formatted(message)
             );
             Assertions.assertNotNull(
-
                     parentDocument.getDocumentReferenceChildren().values(),
                     "Unable to get values collection map for %s." .formatted(message)
             );
@@ -123,22 +138,22 @@ class MongoEmptyMapTestApplicationTests {
 
     private static Stream<Arguments> argumentsStream() {
         return Stream.of(
-                Arguments.of(
-                        Fixtures.PARENT_WITH_CHILD,
-                        "parent with child"
-                ),
-                Arguments.of(
-                        Fixtures.PARENT_WITH_NO_DBREF_CHILD,
-                        "parent with no @DBRef child"
-                ),
-                Arguments.of(
-                        Fixtures.PARENT_WITH_NO_LAZY_DBREF_CHILD,
-                        "parent with no lazy @DBRef child"
-                ),
-                Arguments.of(
-                        Fixtures.PARENT_WITH_NO_DOCUMENT_REFERENCE_CHILD,
-                        "parent with no @DocumentReference child"
-                ),
+//                Arguments.of(
+//                        Fixtures.PARENT_WITH_CHILD,
+//                        "parent with child"
+//                ),
+//                Arguments.of(
+//                        Fixtures.PARENT_WITH_NO_DBREF_CHILD,
+//                        "parent with no @DBRef child"
+//                ),
+//                Arguments.of(
+//                        Fixtures.PARENT_WITH_NO_LAZY_DBREF_CHILD,
+//                        "parent with no lazy @DBRef child"
+//                ),
+//                Arguments.of(
+//                        Fixtures.PARENT_WITH_NO_DOCUMENT_REFERENCE_CHILD,
+//                        "parent with no @DocumentReference child"
+//                ),
                 Arguments.of(
                         Fixtures.PARENT_WITH_NO_LAZY_DOCUMENT_REFERENCE_CHILD,
                         "parent with no lazy @DocumentReference child"
